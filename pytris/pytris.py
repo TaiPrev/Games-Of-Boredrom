@@ -79,20 +79,19 @@ def draw_laid_cubes(mem):
 	for x in range(0, 21):
 		for y in range(0, 12):
 			if (mem[x][y]):
-				print("Draw laid cube") #THE CUBES ARE BEING DRAW, SOMEWHERE
-				draw_cube(x, y)
+				draw_cube(y, x)
 
 #####################################################################
 
 def draw_piece(piece, col, row):
 	for i in range(0, len(piece)):
 		for j in range(0, len(piece)):
-			if (piece[i][j]==1):
+			if (piece[j][i]==1):
 				draw_cube(col+i, row+j)
 
 #####################################################################
 
-def draw_piece_stack(stack):
+def draw_future_pieces(stack):
 	#X: 440 > col = 14
 	#Y: 320 > row = 1
 	row = 0
@@ -107,7 +106,7 @@ def draw(mem, stack, pos, piece):
 	DISPLAYSURF.fill(BLACK)
 	draw_playArea()
 	draw_laid_cubes(mem)
-	draw_piece_stack(stack)
+	draw_future_pieces(stack)
 	draw_piece(piece, pos[1], pos[0])
 
 #####################################################################
@@ -135,10 +134,10 @@ def contact(mem, pos, piece): # pos: line, col ; mem: line, col
 	#print(pos)
 	for i in range(0, length):
 		for j in range(0, length):
-			line = pos[0]+(i)
-			row = pos[1]+(j)
+			line = pos[0]+(j)
+			row = pos[1]+(i)
 			#print(i, j, line, pos)
-			if (piece[i][j]==1 and mem[line][row]): #there's SOMETHING BELOW, BLOCKS IT IN PLACE
+			if (piece[j][i]==1) and ((mem[line][row]) or (line + 1 == 21)): #there's SOMETHING BELOW, BLOCKS IT IN PLACE
 				print("THERE'S SOMETHING BELLOW")
 				return True		
 	return False
@@ -153,10 +152,10 @@ def update_memory(old_memory, pos, piece):
 
 	for x in range(0, len(piece)):
 		for z in range(0, len(piece)):
-			col = pos[0]+x
+			col = pos[0]-1+x
 			row = pos[1]+z
 			if (piece[x][z]==1):
-				print(col, row)
+				#print(col, row)
 				new_mem[col][row] = True
 		
 	#print(new_mem)		
@@ -253,12 +252,7 @@ while True: #main loop
 		if ((time_current - time_mark) >= (1000 * ticks_per_level[level])):
 			piece_position[0] = piece_position[0]+1
 			time_mark = time_current
-			#if (contact(memory, piece_position, piece_current) or contact_floor(piece_position, piece_current)): #check if it has made contact, if so, update memory, generate new piece and pop the one on top of the list
-			#	memory = update_memory(memory, piece_position, piece_current)
-			#	piece_current = piece_stack.pop(0)
-			#	piece_stack.append(generate_piece(piece_names))
-			#	piece_position = [0,6]
-			if(contact_floor(piece_position, piece_current)):
+			if(contact(memory, piece_position, piece_current)):
 				memory = update_memory(memory, piece_position, piece_current)
 				piece_current = piece_stack.pop(0)
 				piece_stack.append(generate_piece(piece_names))

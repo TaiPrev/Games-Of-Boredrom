@@ -143,7 +143,7 @@ def contact(mem, pos, piece): # pos: line, col ; mem: line, col
 	return False
 
 #####################################################################
-#TODO: FIX THIS, MEMORY ISN'T UPDATED CORRECTLY
+
 def update_memory(old_memory, pos, piece):
 	new_mem = [[False for x in range(12)] for y in range(21)] 
 	for k in range(0, 20):
@@ -162,6 +162,15 @@ def update_memory(old_memory, pos, piece):
 	return new_mem
 
 #####################################################################
+
+def init_glob_variables():
+	memory = [[False for x in range(12)] for y in range(21)] 
+	level = 0
+	score = 0
+	start = True
+	piece_position = [0,6] #line, col
+	piece_stack = []
+	piece_current = []
 
 cubeSize = 20
 CPL = 12
@@ -217,6 +226,7 @@ memory = [[False for x in range(12)] for y in range(21)]
 level = 0
 score = 0
 start = True
+gameloop = True
 piece_position = [0,6] #line, col
 piece_stack = []
 piece_current = []
@@ -225,18 +235,45 @@ time_mark = pygame.time.get_ticks()
 fpsClock = pygame.time.Clock()
 DISPLAYSURF = pygame.display.set_mode((600,1000))
 
-while True: #main loop
+while gameloop: #main loop
 	for event in pygame.event.get():
-		if event.type == QUIT:
+		if event.type == pygame.QUIT:
 			pygame.quit()
 			sys.exit()
+			print("Exit")
+			gameloop = False
+		if event.type == pygame.KEYDOWN:
+			if event.key == pygame.K_ESCAPE:
+				pygame.quit()
+				sys.exit()
+				print("Exit")
+				gameloop = False
+			if event.key == pygame.K_w:
+				print("w")
+			if event.key == pygame.K_a:
+				print("a")
+			if event.key == pygame.K_s:
+				print("s")
+			if event.key == pygame.K_d:
+				print("d")
+			if event.key == pygame.K_r:
+				memory = [[False for x in range(12)] for y in range(21)] 
+				level = 0
+				score = 0
+				start = True
+				piece_position = [0,6] #line, col
+				piece_stack = []
+				piece_current = []
+				print("r")
+			if event.key == pygame.K_SPACE:
+				print("space")
 	#if (level == -1): #GAME_OVER
 		#DISPLAY RESTART OPTIONS
 
 	if (start):
 		start = False;
 		memory = reset_memory(memory)
-		level = 9
+		level = 0
 		score = 0
 		piece_stack = []
 		piece_current = generate_piece(piece_names)
@@ -263,5 +300,5 @@ while True: #main loop
 			print("GAME_OVER")
 		pygame.display.update()
 		fpsClock.tick(FPS)
-
+		pygame.event.pump()
 #end while

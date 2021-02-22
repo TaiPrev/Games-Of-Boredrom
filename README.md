@@ -1,4 +1,4 @@
-# Python-Games
+# Games-Of-Boredrom
 A petit collection of replica games. Although I only pay attention to this when very bored.
 
 In Progress:

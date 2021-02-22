@@ -1,5 +1,5 @@
 # Python-Games
-A collection of games coded in python. Done mainly when I'm bored.
+A petit collection of replica games. Although I only pay attention to this when very bored.
 
 In Progress:
 

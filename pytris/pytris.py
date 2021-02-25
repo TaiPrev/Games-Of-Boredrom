@@ -18,10 +18,16 @@ bottom = 700
 left = 180
 right = 420
 
+
+cubeSize = 20
+CPL = 12
+lines = 21
+lineWidth = 12
+
 #####################################################################
 
 def is_Line_Empty(line):
-	for x in range(0,11):
+	for x in range(0,lineWidth-1):
 		if (line[x]):
 			return True;
 	return False;
@@ -29,7 +35,7 @@ def is_Line_Empty(line):
 #####################################################################
 
 def is_Line_Complete(line):
-	for x in range(0,11):
+	for x in range(0,lineWidth-1):
 		if (not line[x]):
 			return False;
 	return True;
@@ -37,11 +43,11 @@ def is_Line_Complete(line):
 #####################################################################
 
 def clear_lines(old_mem):
-	new_mem = [[False for x in range(12)] for y in range(21)] 
+	new_mem = [[False for x in range(lineWidth)] for y in range(lines)] 
 	i = 0
-	for k in range(0, 20):
+	for k in range(0, lines-1):
 		if (not is_Line_Complete(old_mem[k][:])):
-			for j in range(0, 12):
+			for j in range(0, lineWidth):
 				new_mem[i][j] = old_mem[k][j]
 			i+=1
 	return new_mem
@@ -52,7 +58,7 @@ def generate_piece(piece_names):
 
 #####################################################################
 
-def rotate(piece):
+def rotate(piece): #TODO
 	return
 
 #####################################################################
@@ -76,8 +82,8 @@ def draw_cube(col, row):
 #####################################################################
 
 def draw_laid_cubes(mem):
-	for x in range(0, 21):
-		for y in range(0, 12):
+	for x in range(0, lines):
+		for y in range(0, lineWidth):
 			if (mem[x][y]):
 				draw_cube(y, x)
 
@@ -112,8 +118,8 @@ def draw(mem, stack, pos, piece):
 #####################################################################
 
 def reset_memory(mem):
-	for x in range(0, 21):
-		for y in range(0, 12):
+	for x in range(0, lines):
+		for y in range(0, lineWidth):
 			mem[x][y] = False
 	return mem
 
@@ -121,10 +127,30 @@ def reset_memory(mem):
 
 def contact_floor(pos, piece): 
 	for i in range(0, len(piece)):
-		if (piece[len(piece)-1][i] == 1 and pos[0] == (22-len(piece)-1)):
+		if (piece[len(piece)-1][i] == 1 and pos[0] == ((lineWidth+1)-len(piece)-1)):
 			print("GROUND TOUCHED")
 			return True
 	print("THE GROUND IS FAR AWAY")
+	return False
+
+#####################################################################
+
+def contact_left_side(col, piece): 
+	for i in range(0, len(piece)):
+		for j in range(0, len(piece)):
+			if (piece[j][i] == 1 and (col + i) < 0):
+				print("LEFT SIDE TOUCHED")
+				return True
+	return False
+
+#####################################################################
+
+def contact_right_side(col, piece):
+	for i in range(len(piece)-1, -1, -1):
+		for j in range(len(piece)-1, -1, -1):
+			if (piece[j][i] == 1 and (col + i) >= lineWidth):
+				print("RIGHT SIDE TOUCHED")
+				return True
 	return False
 
 #####################################################################
@@ -137,7 +163,7 @@ def contact(mem, pos, piece): # pos: line, col ; mem: line, col
 			line = pos[0]+(j)
 			row = pos[1]+(i)
 			#print(i, j, line, pos)
-			if (piece[j][i]==1) and ((mem[line][row]) or (line + 1 == 21)): #there's SOMETHING BELOW, BLOCKS IT IN PLACE
+			if (piece[j][i]==1) and ((mem[line][row]) or (line + 1 == lines)): #there's SOMETHING BELOW, BLOCKS IT IN PLACE
 				print("THERE'S SOMETHING BELLOW")
 				return True		
 	return False
@@ -145,9 +171,9 @@ def contact(mem, pos, piece): # pos: line, col ; mem: line, col
 #####################################################################
 
 def update_memory(old_memory, pos, piece):
-	new_mem = [[False for x in range(12)] for y in range(21)] 
-	for k in range(0, 20):
-		for j in range(0, 12):
+	new_mem = [[False for x in range(lineWidth)] for y in range(lines)] 
+	for k in range(0, lines-1):
+		for j in range(0, lineWidth):
 			new_mem[k][j] = old_memory[k][j]
 
 	for x in range(0, len(piece)):
@@ -164,7 +190,7 @@ def update_memory(old_memory, pos, piece):
 #####################################################################
 
 def init_glob_variables():
-	memory = [[False for x in range(12)] for y in range(21)] 
+	memory = [[False for x in range(lineWidth)] for y in range(lines)] 
 	level = 0
 	score = 0
 	start = True
@@ -172,9 +198,8 @@ def init_glob_variables():
 	piece_stack = []
 	piece_current = []
 
-cubeSize = 20
-CPL = 12
-lines = 21
+#####################################################################
+
 
 ticks_per_level = [1.5, 1.45, 1.4, 1.3, 1.1, 0.9, 0.7, 0.5, 0.3, 0.1]
 
@@ -222,7 +247,7 @@ RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
 
-memory = [[False for x in range(12)] for y in range(21)] 
+memory = [[False for x in range(lineWidth)] for y in range(lines)] 
 level = 0
 score = 0
 start = True
@@ -251,13 +276,16 @@ while gameloop: #main loop
 			if event.key == pygame.K_w:
 				print("w")
 			if event.key == pygame.K_a:
-				print("a")
+				if not contact_left_side(piece_position[1]-1, piece_current): 	#TODO: ADD CHECK to see if it collides with the blocks in memory
+					piece_position[1] = piece_position[1]-1
 			if event.key == pygame.K_s:
 				print("s")
 			if event.key == pygame.K_d:
-				print("d")
+				if not contact_right_side(piece_position[1]+1, piece_current):	#TODO: ADD CHECK to see if it collides with the blocks in memory
+					piece_position[1] = piece_position[1]+1
+					print(piece_position[1])
 			if event.key == pygame.K_r:
-				memory = [[False for x in range(12)] for y in range(21)] 
+				memory = [[False for x in range(lineWidth)] for y in range(lines)] 
 				level = 0
 				score = 0
 				start = True
@@ -283,7 +311,6 @@ while gameloop: #main loop
 		memory = clear_lines(memory)
 
 	if(level != -1):
-		#print(memory)
 		draw(memory, piece_stack, piece_position, piece_current)
 		time_current = pygame.time.get_ticks()
 		if ((time_current - time_mark) >= (1000 * ticks_per_level[level])):

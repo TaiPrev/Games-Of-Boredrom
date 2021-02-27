@@ -58,8 +58,8 @@ def generate_piece(piece_names):
 
 #####################################################################
 
-def rotate(piece): #TODO
-	return
+def rotate(piece): #ROTATE 90 degrees to the right
+	return list(list(x)[::-1] for x in zip(*piece))
 
 #####################################################################
 
@@ -170,6 +170,10 @@ def contact(mem, pos, piece): # pos: line, col ; mem: line, col
 
 #####################################################################
 
+
+
+#####################################################################
+
 def update_memory(old_memory, pos, piece):
 	new_mem = [[False for x in range(lineWidth)] for y in range(lines)] 
 	for k in range(0, lines-1):
@@ -274,12 +278,12 @@ while gameloop: #main loop
 				print("Exit")
 				gameloop = False
 			if event.key == pygame.K_w:
-				print("w")
+				piece_current = rotate(piece_current)
 			if event.key == pygame.K_a:
 				if not contact_left_side(piece_position[1]-1, piece_current): 	#TODO: ADD CHECK to see if it collides with the blocks in memory
 					piece_position[1] = piece_position[1]-1
-			if event.key == pygame.K_s:
-				print("s")
+			if event.key == pygame.K_s and not contact(memory, piece_position, piece_current):
+				piece_position[0] = piece_position[0]+1
 			if event.key == pygame.K_d:
 				if not contact_right_side(piece_position[1]+1, piece_current):	#TODO: ADD CHECK to see if it collides with the blocks in memory
 					piece_position[1] = piece_position[1]+1

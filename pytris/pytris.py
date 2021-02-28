@@ -13,7 +13,6 @@ from pygame.locals import *
 
 FPS = 60
 
-
 cubeSize = 20
 lines = 20
 lineWidth = 12
@@ -32,6 +31,7 @@ l = [[1, 1, 1, 1],
 	 [0, 0, 0, 0],
 	 [0, 0, 0, 0]
 	]
+
 o = [[1, 1],
 	 [1, 1]
 	]
@@ -141,10 +141,11 @@ def draw_cube(col, row):
 
 #####################################################################
 
-def draw_laid_cubes(mem):
+def draw_laid_cubes():
+	global memory
 	for x in range(0, lines):
 		for y in range(0, lineWidth):
-			if (mem[x][y]):
+			if (memory[x][y]):
 				draw_cube(y, x)
 
 #####################################################################
@@ -170,7 +171,7 @@ def draw():
 	global memory, piece_position, piece_current
 	DISPLAYSURF.fill(BLACK)
 	draw_playArea()
-	draw_laid_cubes(memory)
+	draw_laid_cubes()
 	draw_future_pieces()
 	draw_piece(piece_current, piece_position[1], piece_position[0])
 
@@ -203,7 +204,7 @@ def contact(mem, pos, piece): # pos: line, col ; mem: line, col
 def update_memory(old_memory):
 	global memory, piece_position, piece_current
 	new_mem = [[False for x in range(lineWidth)] for y in range(lines)] 
-	for k in range(0, lines-1):
+	for k in range(0, lines):
 		for j in range(0, lineWidth):
 			new_mem[k][j] = old_memory[k][j]
 
@@ -262,7 +263,6 @@ while gameloop: #main loop
 			if event.key == pygame.K_s: 
 				if contact(memory, piece_position, piece_current) != 1:
 					piece_position[0] = piece_position[0]+1
-					print("Post: ", piece_position)
 				elif contact(memory, piece_position, piece_current) == 1:
 					spawn_new_piece()
 			if event.key == pygame.K_d and contact(memory, piece_position, piece_current) != 2:
@@ -290,9 +290,7 @@ while gameloop: #main loop
 				time_mark = time_current
 			else:
 				spawn_new_piece()
-
 		draw()
-
 		if is_Line_Empty(memory[0][:]): #if game_over, aka something in line 21), LEVEL = -1
 			level = -1
 			print("GAME_OVER")

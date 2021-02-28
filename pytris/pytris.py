@@ -125,6 +125,10 @@ def rotate(piece): #ROTATE 90 degrees to the right
 
 #####################################################################
 
+def realocate
+
+#####################################################################
+
 def draw_playArea():
 	#X: 180 ; 420
 	#Y: 300 ; 700
@@ -193,6 +197,24 @@ def contact_floor(): #Operation to check only for floor, optimized for that
 
 #####################################################################
 
+def realocate():
+
+
+#####################################################################
+
+def overlap(): #Operation to check only for floor, optimized for that
+	global lineWidth, lines, memory, piece_position, piece_current
+	length = len(piece_current)
+	for i in range(length-1, -1, -1):
+		for j in range(length-1, -1, -1):
+			row = piece_position[0] + j
+			col = piece_position[1] + i
+			if piece_current[j][i]==1 and memory[row+][col]:
+				return True
+	return False
+
+#####################################################################
+
 def contact(): # piece_position: row, col ; memory: line, col
 	global lineWidth, lines, memory, piece_position, piece_current
 	length = len(piece_current)
@@ -208,7 +230,9 @@ def contact(): # piece_position: row, col ; memory: line, col
 				elif ((col - 1 < 0) or (memory[row][col-1])): #THERE'S SOMETHING TO THE LEFT
 					return 3	
 				elif (row > 0 and memory[row-1][col]): #THERE'S SOMETHING TO THE ABOVE
-					return 4	
+					return 4
+				elif(memory[row][col]): #THERE'S AN OVERLAP
+					return 5
 	return 0
 
 #####################################################################
@@ -280,6 +304,8 @@ while gameloop: #main loop
 				gameloop = False
 			if event.key == pygame.K_w:
 				piece_current = rotate(piece_current)
+				if (overlap()):
+					realocate()
 			if event.key == pygame.K_s: 
 				if contact_floor() != 1:
 					piece_position[0] = piece_position[0]+1

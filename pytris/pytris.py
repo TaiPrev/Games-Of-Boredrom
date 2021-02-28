@@ -179,26 +179,31 @@ def draw():
 
 #####################################################################
 
-def contact(mem, pos, piece): # pos: line, col ; mem: line, col
-	global lineWidth, lines
-	length = len(piece)
-	for i in range(0, length):
-		for j in range(0, length):
-			row = pos[0]+ j
-			col = pos[1]+ i
-			#print(i, j, line, pos)
-			if (piece[j][i]==1):
-				if ((row + 1 == lines) or (mem[row+1][col])): #there's SOMETHING BELOW, BLOCKS IT IN PLACE
-					print("THERE'S SOMETHING BELLOW")
+def contact_floor(): #Operation to check only for floor, optimized for that
+	global lineWidth, lines, memory, piece_position, piece_current
+	length = len(piece_current)
+	for i in range(length-1, -1, -1):
+		for j in range(length-1, -1, -1):
+			row = piece_position[0] + j
+			col = piece_position[1] + i
+			if piece_current[j][i]==1 and ((row + 1 == lines) or (memory[row+1][col])):
+				return 1
+
+def contact(): # piece_position: row, col ; memory: line, col
+	global lineWidth, lines, memory, piece_position, piece_current
+	length = len(piece_current)
+	for j in range(0, length):
+		for i in range(0, length):
+			row = piece_position[0]+ j
+			col = piece_position[1]+ i
+			if (piece_current[j][i]==1):
+				if ((row + 1 == lines) or (memory[row+1][col])): #there's SOMETHING BELOW
 					return 1		
-				elif ((col + 1 >= lineWidth) or (mem[row][col+1])):
-					#print("THERE'S SOMETHING TO THE RIGHT")
+				elif ((col + 1 >= lineWidth) or (memory[row][col+1])): #THERE'S SOMETHING TO THE RIGHT
 					return 2	
-				elif ((col - 1 < 0) or (mem[row][col-1])):
-					#print("THERE'S SOMETHING TO THE LEFT")
+				elif ((col - 1 < 0) or (memory[row][col-1])): #THERE'S SOMETHING TO THE LEFT
 					return 3	
-				elif (row > 0 and mem[row-1][col]):
-					#print("THERE'S SOMETHING ABOVE")
+				elif (row > 0 and memory[row-1][col]): #THERE'S SOMETHING TO THE ABOVE
 					return 4	
 	return 0
 
@@ -208,12 +213,10 @@ def update_memory():
 	global lineWidth, lines, memory, piece_position, piece_current
 	for x in range(0, len(piece_current)):
 		for z in range(0, len(piece_current)):
-			col = piece_position[0]+x
-			row = piece_position[1]+z
-			print(col, "<", lineWidth, "; ", row, "<", lines)
-			if piece_current[x][z]==1 and row <= lineWidth and col <= lines:
-				print("GO")
-				memory[col][row] = True
+			row = piece_position[0]+x
+			col = piece_position[1]+z
+			if piece_current[x][z]==1 and col < lineWidth and row < lines:
+				memory[row][col] = True
 			
 #####################################################################
 
@@ -259,18 +262,18 @@ while gameloop: #main loop
 			if event.key == pygame.K_w:
 				piece_current = rotate(piece_current)
 			if event.key == pygame.K_s: 
-				if contact(memory, piece_position, piece_current) != 1:
+				if contact_floor() != 1:
 					piece_position[0] = piece_position[0]+1
-				elif contact(memory, piece_position, piece_current) == 1:
+				elif contact_floor() == 1:
 					spawn_new_piece()
-			if event.key == pygame.K_d and contact(memory, piece_position, piece_current) != 2:
+			if event.key == pygame.K_d and contact() != 2:
 				piece_position[1] = piece_position[1]+1
-			if event.key == pygame.K_a and contact(memory, piece_position, piece_current) != 3:
+			if event.key == pygame.K_a and contact() != 3:
 				piece_position[1] = piece_position[1]-1
 			if event.key == pygame.K_r:
 				start = True
 			if event.key == pygame.K_SPACE:
-				while contact(memory, piece_position, piece_current) != 1:
+				while contact_floor() != 1:
 					piece_position[0] = piece_position[0]+1
 				spawn_new_piece()
 
@@ -283,7 +286,7 @@ while gameloop: #main loop
 	if(level != -1):
 		time_current = pygame.time.get_ticks()
 		if ((time_current - time_mark) >= (1000 * ticks_per_level[level])):
-			if(contact(memory, piece_position, piece_current) != 1):
+			if(contact_floor() != 1):
 				piece_position[0] = piece_position[0]+1
 				time_mark = time_current
 			else:

@@ -72,6 +72,8 @@ BLUE = (0, 0, 255)
 
 #INFO
 memory = [[False for x in range(lineWidth)] for y in range(lines)] 
+layPoints = 10
+linePoints = 100
 level = 0
 score = 0
 start = True
@@ -189,6 +191,8 @@ def contact_floor(): #Operation to check only for floor, optimized for that
 			if piece_current[j][i]==1 and ((row + 1 == lines) or (memory[row+1][col])):
 				return 1
 
+#####################################################################
+
 def contact(): # piece_position: row, col ; memory: line, col
 	global lineWidth, lines, memory, piece_position, piece_current
 	length = len(piece_current)
@@ -211,12 +215,27 @@ def contact(): # piece_position: row, col ; memory: line, col
 
 def update_memory():
 	global lineWidth, lines, memory, piece_position, piece_current
+	earnedPoints = layPoints
+	completeLines = 0
 	for x in range(0, len(piece_current)):
 		for z in range(0, len(piece_current)):
 			row = piece_position[0]+x
 			col = piece_position[1]+z
 			if piece_current[x][z]==1 and col < lineWidth and row < lines:
 				memory[row][col] = True
+
+	y = lines - 1
+	while y >= 0:
+		if (is_Line_Complete(memory[y])):
+			memory.remove(memory[y])
+			completeLines += 1
+			earnedPoints += linePoints
+			memory = [[False for x in range(lineWidth)]] + memory
+			y += 1
+		y -= 1
+
+	earnedPoints += completeLines * earnedPoints
+	#print(completeLines)
 			
 #####################################################################
 

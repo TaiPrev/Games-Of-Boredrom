@@ -134,6 +134,7 @@ def draw_playArea():
 #####################################################################
 
 def draw_cube(col, row):
+	global cubeSize
 	pos_x = left + cubeSize*col
 	pos_y = top + cubeSize*row
 	pygame.draw.rect(DISPLAYSURF, GREEN, (pos_x, pos_y, 20, 20))
@@ -142,7 +143,7 @@ def draw_cube(col, row):
 #####################################################################
 
 def draw_laid_cubes():
-	global memory
+	global lineWidth, lines, memory
 	for x in range(0, lines):
 		for y in range(0, lineWidth):
 			if (memory[x][y]):
@@ -159,6 +160,7 @@ def draw_piece(piece, col, row):
 #####################################################################
 
 def draw_future_pieces():
+	global lineWidth, lines
 	row = 0
 	col = lineWidth + 2
 	for i in range(0, len(piece_stack)):
@@ -178,6 +180,7 @@ def draw():
 #####################################################################
 
 def contact(mem, pos, piece): # pos: line, col ; mem: line, col
+	global lineWidth, lines
 	length = len(piece)
 	for i in range(0, length):
 		for j in range(0, length):
@@ -201,26 +204,21 @@ def contact(mem, pos, piece): # pos: line, col ; mem: line, col
 
 #####################################################################
 
-def update_memory(old_memory):
-	global memory, piece_position, piece_current
-	new_mem = [[False for x in range(lineWidth)] for y in range(lines)] 
-	for k in range(0, lines):
-		for j in range(0, lineWidth):
-			new_mem[k][j] = old_memory[k][j]
-
+def update_memory():
+	global lineWidth, lines, memory, piece_position, piece_current
 	for x in range(0, len(piece_current)):
 		for z in range(0, len(piece_current)):
 			col = piece_position[0]+x
 			row = piece_position[1]+z
-			if (piece_current[x][z]==1):
-				new_mem[col][row] = True
+			print(col, "<", lineWidth, "; ", row, "<", lines)
+			if piece_current[x][z]==1 and row <= lineWidth and col <= lines:
+				print("GO")
+				memory[col][row] = True
 			
-	return new_mem
-
 #####################################################################
 
 def init_glob_variables():
-	global memory, level, score, piece_position, piece_stack, piece_current
+	global lineWidth, lines, memory, level, score, piece_position, piece_stack, piece_current
 	memory = [[False for x in range(lineWidth)] for y in range(lines)] 
 	level = 0
 	score = 0
@@ -235,7 +233,7 @@ def init_glob_variables():
 def spawn_new_piece():
 	global time_mark, memory, piece_current, piece_stack, piece_position
 	time_mark = time_current
-	memory = update_memory(memory)
+	update_memory()
 	piece_current = piece_stack.pop(0)
 	piece_stack.append(generate_piece(piece_names))
 	piece_position = [0,6]

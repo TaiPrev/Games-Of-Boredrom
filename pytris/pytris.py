@@ -23,7 +23,7 @@ left = 180
 right = left + lineWidth * cubeSize
 
 
-ticks_per_level = [10.5, 1.45, 1.4, 1.3, 1.1, 0.9, 0.7, 0.5, 0.3, 0.1]
+ticks_per_level = [1.5, 1.45, 1.4, 1.3, 1.1, 0.9, 0.7, 0.5, 0.3, 0.1]
 
 #PIECES
 l = [[1, 1, 1, 1],
@@ -127,21 +127,23 @@ def testPosition(temp): # piece_position: row, col ; memory: line, col
 		for j in range(length-1, -1, -1):
 			row = temp[0] + j
 			col = temp[1] + i
-			if piece_current[j][i]==1 and memory[row][col] and col < lineWidth and col >= 0 and row < lines:
-				return True
-	return False
+			if col < lineWidth and col >= 0 and row < lines and piece_current[j][i]==1 and memory[row][col]:
+				return False
+	return True
 
 #####################################################################
 
 def realocateRecursive(queue):
 	global lineWidth, lines, memory, piece_position, piece_current
 
-	top = queue[0]
 	length = len(queue)
-	queue = queue[1:length]
+	if (length <= 0): return [[0, 0]]
+
+	top = queue[0]
+	print("REL: ", length)
 	temp = piece_position
-	temp[0] += top[0]
-	temp[1] += top[1]
+	temp[0] = temp[0] + top[0]
+	temp[1] = temp[1] + top[1]
 
 	if testPosition(temp): return top
 
@@ -156,15 +158,22 @@ def realocateRecursive(queue):
 	#		right = [[queue[n][0], queue[n][1]+1]]
 	#		queue += queue + right
 	
-	if top[0] < -len(piece_current):
+	print(temp[0], ", ", temp[1])
+
+	if temp[0] < -len(piece_current):
 		up = [[top[0]-1, top[1]]]
-		queue += queue + up
-	if top[1] > 0:
+		print("up")
+		queue = queue + up
+	if temp[1] > 0:
 		left = [[top[0], top[1]-1]]
-		queue += queue + left
-	if top[1] > lineWidth-1:
+		print("left")
+		queue = queue + left
+	if temp[1] > lineWidth-1:
 		right = [[top[0], top[1]+1]]
-		queue += queue + right
+		print("right")
+		queue = queue + right
+
+	queue = queue[1:length]
 
 	return realocateRecursive(queue)
 
@@ -172,18 +181,20 @@ def realocateRecursive(queue):
 
 def realocate():
 	global lineWidth, lines, memory, piece_position, piece_current
-	visited = memory
 	queue = [[0,0]]
-	modifier = realocateRecursive(visited)
-	piece_position[0] += modifier[0]
-	piece_position[1] += modifier[1]
+	modifier = realocateRecursive(queue)
+	if (modifier == [[0, 0]]): level = -1 #GAME OVER
+	print(modifier, ": ", modifier[0][0], "   ", modifier[0][1])
+	piece_position[0] = piece_position[0] + modifier[0][0]
+	piece_position[1] = piece_position[1] + modifier[0][1]
 
 #####################################################################
 
 def rotate(): #ROTATE 90 degrees to the right
 	global piece_current
-	piece_current =  list(list(x)[::-1] for x in zip(*piece))
+	piece_current =  list(list(x)[::-1] for x in zip(*piece_current))
 	if (overlap()):
+		print("OVERLAP")
 		realocate()
 
 #####################################################################
@@ -256,7 +267,6 @@ def contact_floor(): #Operation to check only for floor, optimized for that
 
 #####################################################################
 
-
 def overlap(): #Operation to check only for floor, optimized for that
 	global lineWidth, lines, memory, piece_position, piece_current
 	length = len(piece_current)
@@ -264,8 +274,13 @@ def overlap(): #Operation to check only for floor, optimized for that
 		for j in range(length-1, -1, -1):
 			row = piece_position[0] + j
 			col = piece_position[1] + i
-			if piece_current[j][i]==1 and memory[row][col]:
-				return True
+			if piece_current[j][i]==1:
+				if col < 0 or col >= lineWidth:
+					return True
+				elif row < 0 or row >= lines:
+					return True
+				elif memory[row][col]:
+					return True
 	return False
 
 #####################################################################

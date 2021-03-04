@@ -71,7 +71,7 @@ GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
 
 #INFO
-memory = [[False for x in range(lineWidth)] for y in range(lines)] 
+memory = [[False for x in range(lineWidth)] for y in range(lines)]
 layPoints = 10
 linePoints = 100
 level = 0
@@ -120,12 +120,71 @@ def generate_piece(piece_names):
 
 #####################################################################
 
-def rotate(piece): #ROTATE 90 degrees to the right
-	return list(list(x)[::-1] for x in zip(*piece))
+def testPosition(temp): # piece_position: row, col ; memory: line, col
+	global lineWidth, lines, memory, piece_current
+	length = len(piece_current)
+	for i in range(length-1, -1, -1):
+		for j in range(length-1, -1, -1):
+			row = temp[0] + j
+			col = temp[1] + i
+			if piece_current[j][i]==1 and memory[row][col] and col < lineWidth and col >= 0 and row < lines:
+				return True
+	return False
 
 #####################################################################
 
-def realocate
+def realocateRecursive(queue):
+	global lineWidth, lines, memory, piece_position, piece_current
+
+	top = queue[0]
+	length = len(queue)
+	queue = queue[1:length]
+	temp = piece_position
+	temp[0] += top[0]
+	temp[1] += top[1]
+
+	if testPosition(temp): return top
+
+	#for n in range(0, length):
+	#	if queue[n][0] < -len(piece_current):
+	#		up = [[queue[n][0]-1, queue[n][1]]]
+	#		queue += queue + up
+	#	if queue[n][1] > 0:
+	#		left = [[queue[n][0], queue[n][1]-1]]
+	#		queue += queue + left
+	#	if queue[n][1] < lineWidth-1:
+	#		right = [[queue[n][0], queue[n][1]+1]]
+	#		queue += queue + right
+	
+	if top[0] < -len(piece_current):
+		up = [[top[0]-1, top[1]]]
+		queue += queue + up
+	if top[1] > 0:
+		left = [[top[0], top[1]-1]]
+		queue += queue + left
+	if top[1] > lineWidth-1:
+		right = [[top[0], top[1]+1]]
+		queue += queue + right
+
+	return realocateRecursive(queue)
+
+#####################################################################
+
+def realocate():
+	global lineWidth, lines, memory, piece_position, piece_current
+	visited = memory
+	queue = [[0,0]]
+	modifier = realocateRecursive(visited)
+	piece_position[0] += modifier[0]
+	piece_position[1] += modifier[1]
+
+#####################################################################
+
+def rotate(): #ROTATE 90 degrees to the right
+	global piece_current
+	piece_current =  list(list(x)[::-1] for x in zip(*piece))
+	if (overlap()):
+		realocate()
 
 #####################################################################
 
@@ -197,10 +256,6 @@ def contact_floor(): #Operation to check only for floor, optimized for that
 
 #####################################################################
 
-def realocate():
-	
-
-#####################################################################
 
 def overlap(): #Operation to check only for floor, optimized for that
 	global lineWidth, lines, memory, piece_position, piece_current
@@ -209,7 +264,7 @@ def overlap(): #Operation to check only for floor, optimized for that
 		for j in range(length-1, -1, -1):
 			row = piece_position[0] + j
 			col = piece_position[1] + i
-			if piece_current[j][i]==1 and memory[row+][col]:
+			if piece_current[j][i]==1 and memory[row][col]:
 				return True
 	return False
 
@@ -303,9 +358,7 @@ while gameloop: #main loop
 				print("Exit")
 				gameloop = False
 			if event.key == pygame.K_w:
-				piece_current = rotate(piece_current)
-				if (overlap()):
-					realocate()
+				rotate()
 			if event.key == pygame.K_s: 
 				if contact_floor() != 1:
 					piece_position[0] = piece_position[0]+1

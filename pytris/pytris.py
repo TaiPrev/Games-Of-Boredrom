@@ -123,11 +123,12 @@ def generate_piece(piece_names):
 def testPosition(temp): # piece_position: row, col ; memory: line, col
 	global lineWidth, lines, memory, piece_current
 	length = len(piece_current)
-	for i in range(length-1, -1, -1):
-		for j in range(length-1, -1, -1):
+	for i in range(0, length):
+		for j in range(0, length):
 			row = temp[0] + j
 			col = temp[1] + i
-			if col < lineWidth and col >= 0 and row < lines and piece_current[j][i]==1 and memory[row][col]:
+			print("R: ", row, " C:", col)
+			if (col >= lineWidth or col < 0 or row > lines) or (piece_current[j][i]==1 and memory[row][col]):
 				return False
 	return True
 
@@ -137,13 +138,15 @@ def realocateRecursive(queue):
 	global lineWidth, lines, memory, piece_position, piece_current
 
 	length = len(queue)
-	if (length <= 0): return [[0, 0]]
+	if (length <= 0): return [0, 0]
 
 	top = queue[0]
 	print("REL: ", length)
 	temp = piece_position
 	temp[0] = temp[0] + top[0]
 	temp[1] = temp[1] + top[1]
+
+	print("TOP: ", top, "TEMP: ", temp)
 
 	if testPosition(temp): return top
 
@@ -160,7 +163,7 @@ def realocateRecursive(queue):
 	
 	print(temp[0], ", ", temp[1])
 
-	if temp[0] < -len(piece_current):
+	if temp[0] > 0:
 		up = [[top[0]-1, top[1]]]
 		print("up")
 		queue = queue + up
@@ -173,28 +176,37 @@ def realocateRecursive(queue):
 		print("right")
 		queue = queue + right
 
+	length = len(queue)
 	queue = queue[1:length]
 
-	return realocateRecursive(queue)
+	print("NEW CICLE")
+
+	result = realocateRecursive(queue)
+
+	return result
 
 #####################################################################
 
 def realocate():
 	global lineWidth, lines, memory, piece_position, piece_current
+	print("Old Pos: ", piece_position)
 	queue = [[0,0]]
 	modifier = realocateRecursive(queue)
-	if (modifier == [[0, 0]]): level = -1 #GAME OVER
-	print(modifier, ": ", modifier[0][0], "   ", modifier[0][1])
-	piece_position[0] = piece_position[0] + modifier[0][0]
-	piece_position[1] = piece_position[1] + modifier[0][1]
+	if (modifier == [0, 0]): level = -1 #GAME OVER
+	print("MOD ", modifier)
+	piece_position[0] = piece_position[0] + modifier[0]
+	piece_position[1] = piece_position[1] + modifier[1]
+	print("New Pos: ", piece_position)
 
 #####################################################################
 
 def rotate(): #ROTATE 90 degrees to the right
 	global piece_current
+	original = piece_current
 	piece_current =  list(list(x)[::-1] for x in zip(*piece_current))
 	if (overlap()):
 		print("OVERLAP")
+		#piece_current = original #NOT ENOUGH
 		realocate()
 
 #####################################################################
@@ -206,6 +218,22 @@ def draw_playArea():
 	pygame.draw.line(DISPLAYSURF, WHITE, (right, top-1), (right, bottom), 1)
 	pygame.draw.line(DISPLAYSURF, WHITE, (left-1, top-1), (right, top-1), 1)
 	pygame.draw.line(DISPLAYSURF, WHITE, (left-1, bottom), (right, bottom), 1)
+
+#####################################################################
+
+def draw_outline():
+	global piece_position, piece_current
+	#X: 180 ; 420
+	#Y: 300 ; 700
+	length = len(piece_current)
+	pos_x = left + cubeSize*piece_position[1]
+	pos_y = top + cubeSize*piece_position[0]
+	pos_xB = pos_x + length * cubeSize
+	pos_yB = pos_y + length * cubeSize
+	pygame.draw.line(DISPLAYSURF, WHITE, (pos_x-1, pos_y-1), (pos_x-1, pos_yB), 1)
+	pygame.draw.line(DISPLAYSURF, WHITE, (pos_xB, pos_y-1), (pos_xB, pos_yB), 1)
+	pygame.draw.line(DISPLAYSURF, WHITE, (pos_x-1, pos_y-1), (pos_xB, pos_y-1), 1)
+	pygame.draw.line(DISPLAYSURF, WHITE, (pos_x-1, pos_yB), (pos_xB, pos_yB), 1)
 
 #####################################################################
 
@@ -252,6 +280,7 @@ def draw():
 	draw_laid_cubes()
 	draw_future_pieces()
 	draw_piece(piece_current, piece_position[1], piece_position[0])
+	draw_outline()
 
 #####################################################################
 

@@ -127,7 +127,6 @@ def testPosition(temp): # piece_position: row, col ; memory: line, col
 		for j in range(0, length):
 			row = temp[0] + j
 			col = temp[1] + i
-			print("R: ", row, " C:", col)
 			if (col >= lineWidth or col < 0 or row > lines) or (piece_current[j][i]==1 and memory[row][col]):
 				return False
 	return True
@@ -141,45 +140,27 @@ def realocateRecursive(queue):
 	if (length <= 0): return [0, 0]
 
 	top = queue[0]
-	print("REL: ", length)
 	temp = piece_position
 	temp[0] = temp[0] + top[0]
 	temp[1] = temp[1] + top[1]
 
-	print("TOP: ", top, "TEMP: ", temp)
-
 	if testPosition(temp): return top
-
-	#for n in range(0, length):
-	#	if queue[n][0] < -len(piece_current):
-	#		up = [[queue[n][0]-1, queue[n][1]]]
-	#		queue += queue + up
-	#	if queue[n][1] > 0:
-	#		left = [[queue[n][0], queue[n][1]-1]]
-	#		queue += queue + left
-	#	if queue[n][1] < lineWidth-1:
-	#		right = [[queue[n][0], queue[n][1]+1]]
-	#		queue += queue + right
-	
-	print(temp[0], ", ", temp[1])
 
 	if temp[0] > 0:
 		up = [[top[0]-1, top[1]]]
-		print("up")
+		#print("up")
 		queue = queue + up
 	if temp[1] > 0:
 		left = [[top[0], top[1]-1]]
-		print("left")
+		#print("left")
 		queue = queue + left
 	if temp[1] > lineWidth-1:
 		right = [[top[0], top[1]+1]]
-		print("right")
+		#print("right")
 		queue = queue + right
 
 	length = len(queue)
 	queue = queue[1:length]
-
-	print("NEW CICLE")
 
 	result = realocateRecursive(queue)
 
@@ -189,14 +170,11 @@ def realocateRecursive(queue):
 
 def realocate():
 	global lineWidth, lines, memory, piece_position, piece_current
-	print("Old Pos: ", piece_position)
 	queue = [[0,0]]
 	modifier = realocateRecursive(queue)
 	if (modifier == [0, 0]): level = -1 #GAME OVER
-	print("MOD ", modifier)
 	piece_position[0] = piece_position[0] + modifier[0]
 	piece_position[1] = piece_position[1] + modifier[1]
-	print("New Pos: ", piece_position)
 
 #####################################################################
 
@@ -205,8 +183,6 @@ def rotate(): #ROTATE 90 degrees to the right
 	original = piece_current
 	piece_current =  list(list(x)[::-1] for x in zip(*piece_current))
 	if (overlap()):
-		print("OVERLAP")
-		#piece_current = original #NOT ENOUGH
 		realocate()
 
 #####################################################################

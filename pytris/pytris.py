@@ -74,6 +74,7 @@ BLUE = (0, 0, 255)
 memory = [[False for x in range(lineWidth)] for y in range(lines)]
 layPoints = 10
 linePoints = 100
+totalPoints = 0
 level = 0
 score = 0
 start = True
@@ -249,6 +250,14 @@ def draw_future_pieces():
 
 #####################################################################
 
+def draw_points():
+	global totalPoints, DISPLAYSURF
+	font = pygame.font.SysFont(None, 24)
+	text = font.render(str(totalPoints), True, WHITE, None)
+	DISPLAYSURF.blit(text, (20, 20))
+
+#####################################################################
+
 def draw():
 	global memory, piece_position, piece_current
 	DISPLAYSURF.fill(BLACK)
@@ -256,7 +265,8 @@ def draw():
 	draw_laid_cubes()
 	draw_future_pieces()
 	draw_piece(piece_current, piece_position[1], piece_position[0])
-	draw_outline()
+	#draw_outline() #Only here for debugging purpouses
+	draw_points()
 
 #####################################################################
 
@@ -313,7 +323,7 @@ def contact(): # piece_position: row, col ; memory: line, col
 #####################################################################
 
 def update_memory():
-	global lineWidth, lines, memory, piece_position, piece_current
+	global lineWidth, lines, memory, piece_position, piece_current, totalPoints
 	earnedPoints = layPoints
 	completeLines = 0
 	for x in range(0, len(piece_current)):
@@ -334,18 +344,21 @@ def update_memory():
 		y -= 1
 
 	earnedPoints += completeLines * earnedPoints
+
+	totalPoints += earnedPoints
 	#print(completeLines)
 			
 #####################################################################
 
 def init_glob_variables():
-	global lineWidth, lines, memory, level, score, piece_position, piece_stack, piece_current
+	global lineWidth, lines, memory, level, score, piece_position, piece_stack, piece_current, totalPoints
 	memory = [[False for x in range(lineWidth)] for y in range(lines)] 
 	level = 0
 	score = 0
 	piece_position = [0,6] #line, col
 	piece_stack = []
 	piece_current = generate_piece(piece_names)
+	totalPoints = 0
 	for x in range(0, 4):
 		piece_stack.append(generate_piece(piece_names))
 
